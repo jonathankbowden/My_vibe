@@ -369,6 +369,17 @@
             background: linear-gradient(180deg, #D4507A, #C45B7B, #A8466A);
         }
 
+        /* Concert image overlay to preserve stage-light effect */
+        .concert-visual img {
+            position: absolute;
+            inset: 0;
+            mix-blend-mode: overlay;
+            opacity: 0;
+        }
+        .concert-visual img.loaded {
+            opacity: 0.7;
+        }
+
         /* ===== Concert Card ===== */
         .concert-card { cursor: default; }
 
@@ -434,37 +445,60 @@
         }
         .stage-radiohead::after { background: radial-gradient(ellipse, #5DADE2, transparent); }
 
+        /* ===== Cover Images (shared) ===== */
+        .album-cover img,
+        .movie-poster img,
+        .concert-visual img,
+        .book-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            position: relative;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.6s var(--ease);
+        }
+
+        .album-cover img.loaded,
+        .movie-poster img.loaded,
+        .concert-visual img.loaded,
+        .book-cover img.loaded {
+            opacity: 1;
+        }
+
         /* ===== Book Cards ===== */
         .book-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 1.5rem;
+            gap: 2rem;
         }
 
         .book-card {
             position: relative;
-            padding: 1.5rem 1.25rem 1.5rem 1.5rem;
             background: var(--surface);
             border-radius: 6px;
             box-shadow: var(--neu-up);
             transition: all 0.4s var(--ease);
-            border-left: 3px solid var(--text-muted);
-            min-height: 120px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
+            overflow: hidden;
         }
 
         .book-card:hover {
             box-shadow: var(--neu-up-hover);
-            transform: translateY(-3px);
+            transform: translateY(-4px);
         }
 
-        .book-card:nth-child(1) { border-left-color: #C0A36E; }
-        .book-card:nth-child(2) { border-left-color: #E8700A; }
-        .book-card:nth-child(3) { border-left-color: #5DADE2; }
-        .book-card:nth-child(4) { border-left-color: #C4405A; }
-        .book-card:nth-child(5) { border-left-color: #7D8A6E; }
+        .book-cover {
+            width: 100%;
+            aspect-ratio: 2/3;
+            background: var(--surface-raised);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .book-info {
+            padding: 0.875rem 1rem 1rem;
+        }
 
         /* ===== Pills ===== */
         .vibe-pills {
@@ -1090,7 +1124,7 @@
             <span class="section-label">Favorite Albums</span>
             <div class="media-grid media-grid--albums">
                 <div class="album-card">
-                    <div class="album-cover cover-channel-orange"></div>
+                    <div class="album-cover cover-channel-orange" data-itunes="channel orange frank ocean" data-type="album"></div>
                     <div class="album-info">
                         <span class="media-number">01</span>
                         <h3 class="media-title">Channel Orange</h3>
@@ -1098,7 +1132,7 @@
                     </div>
                 </div>
                 <div class="album-card">
-                    <div class="album-cover cover-miseducation"></div>
+                    <div class="album-cover cover-miseducation" data-itunes="miseducation of lauryn hill" data-type="album"></div>
                     <div class="album-info">
                         <span class="media-number">02</span>
                         <h3 class="media-title">The Miseducation of Lauryn Hill</h3>
@@ -1106,7 +1140,7 @@
                     </div>
                 </div>
                 <div class="album-card">
-                    <div class="album-cover cover-gkmc"></div>
+                    <div class="album-cover cover-gkmc" data-itunes="good kid maad city kendrick lamar" data-type="album"></div>
                     <div class="album-info">
                         <span class="media-number">03</span>
                         <h3 class="media-title">good kid, m.A.A.d city</h3>
@@ -1114,7 +1148,7 @@
                     </div>
                 </div>
                 <div class="album-card">
-                    <div class="album-cover cover-in-rainbows"></div>
+                    <div class="album-cover cover-in-rainbows" data-itunes="in rainbows radiohead" data-type="album"></div>
                     <div class="album-info">
                         <span class="media-number">04</span>
                         <h3 class="media-title">In Rainbows</h3>
@@ -1122,7 +1156,7 @@
                     </div>
                 </div>
                 <div class="album-card">
-                    <div class="album-cover cover-ctrl"></div>
+                    <div class="album-cover cover-ctrl" data-itunes="ctrl sza" data-type="album"></div>
                     <div class="album-info">
                         <span class="media-number">05</span>
                         <h3 class="media-title">Ctrl</h3>
@@ -1137,7 +1171,7 @@
             <span class="section-label">Favorite Concerts</span>
             <div class="media-grid media-grid--concerts">
                 <div class="concert-card">
-                    <div class="concert-visual stage-kendrick"></div>
+                    <div class="concert-visual stage-kendrick" data-itunes="mr morale big steppers kendrick lamar" data-type="album"></div>
                     <div class="concert-info">
                         <span class="media-number">01</span>
                         <h3 class="media-title">Kendrick Lamar</h3>
@@ -1145,7 +1179,7 @@
                     </div>
                 </div>
                 <div class="concert-card">
-                    <div class="concert-visual stage-beyonce"></div>
+                    <div class="concert-visual stage-beyonce" data-itunes="renaissance beyonce" data-type="album"></div>
                     <div class="concert-info">
                         <span class="media-number">02</span>
                         <h3 class="media-title">Beyonc&eacute;</h3>
@@ -1153,7 +1187,7 @@
                     </div>
                 </div>
                 <div class="concert-card">
-                    <div class="concert-visual stage-radiohead"></div>
+                    <div class="concert-visual stage-radiohead" data-itunes="a moon shaped pool radiohead" data-type="album"></div>
                     <div class="concert-info">
                         <span class="media-number">03</span>
                         <h3 class="media-title">Radiohead</h3>
@@ -1168,7 +1202,7 @@
             <span class="section-label">Favorite Movies</span>
             <div class="media-grid media-grid--movies">
                 <div class="movie-card">
-                    <div class="movie-poster poster-inception"></div>
+                    <div class="movie-poster poster-inception" data-itunes="inception 2010" data-type="movie"></div>
                     <div class="movie-info">
                         <span class="media-number">01</span>
                         <h3 class="media-title">Inception</h3>
@@ -1176,7 +1210,7 @@
                     </div>
                 </div>
                 <div class="movie-card">
-                    <div class="movie-poster poster-shawshank"></div>
+                    <div class="movie-poster poster-shawshank" data-itunes="shawshank redemption" data-type="movie"></div>
                     <div class="movie-info">
                         <span class="media-number">02</span>
                         <h3 class="media-title">The Shawshank Redemption</h3>
@@ -1184,7 +1218,7 @@
                     </div>
                 </div>
                 <div class="movie-card">
-                    <div class="movie-poster poster-eternal-sunshine"></div>
+                    <div class="movie-poster poster-eternal-sunshine" data-itunes="eternal sunshine of the spotless mind" data-type="movie"></div>
                     <div class="movie-info">
                         <span class="media-number">03</span>
                         <h3 class="media-title">Eternal Sunshine of the Spotless Mind</h3>
@@ -1192,7 +1226,7 @@
                     </div>
                 </div>
                 <div class="movie-card">
-                    <div class="movie-poster poster-moonlight"></div>
+                    <div class="movie-poster poster-moonlight" data-itunes="moonlight 2016 barry jenkins" data-type="movie"></div>
                     <div class="movie-info">
                         <span class="media-number">04</span>
                         <h3 class="media-title">Moonlight</h3>
@@ -1200,7 +1234,7 @@
                     </div>
                 </div>
                 <div class="movie-card">
-                    <div class="movie-poster poster-grand-budapest"></div>
+                    <div class="movie-poster poster-grand-budapest" data-itunes="grand budapest hotel" data-type="movie"></div>
                     <div class="movie-info">
                         <span class="media-number">05</span>
                         <h3 class="media-title">The Grand Budapest Hotel</h3>
@@ -1215,29 +1249,54 @@
             <span class="section-label">Favorite Books</span>
             <div class="book-grid">
                 <div class="book-card">
-                    <span class="media-number">01</span>
-                    <h3 class="media-title">The Alchemist</h3>
-                    <p class="media-detail">Paulo Coelho</p>
+                    <div class="book-cover">
+                        <img src="https://covers.openlibrary.org/b/isbn/9780062315007-L.jpg" alt="The Alchemist" loading="lazy" onload="this.classList.add('loaded')">
+                    </div>
+                    <div class="book-info">
+                        <span class="media-number">01</span>
+                        <h3 class="media-title">The Alchemist</h3>
+                        <p class="media-detail">Paulo Coelho</p>
+                    </div>
                 </div>
                 <div class="book-card">
-                    <span class="media-number">02</span>
-                    <h3 class="media-title">Shoe Dog</h3>
-                    <p class="media-detail">Phil Knight</p>
+                    <div class="book-cover">
+                        <img src="https://covers.openlibrary.org/b/isbn/9781501135910-L.jpg" alt="Shoe Dog" loading="lazy" onload="this.classList.add('loaded')">
+                    </div>
+                    <div class="book-info">
+                        <span class="media-number">02</span>
+                        <h3 class="media-title">Shoe Dog</h3>
+                        <p class="media-detail">Phil Knight</p>
+                    </div>
                 </div>
                 <div class="book-card">
-                    <span class="media-number">03</span>
-                    <h3 class="media-title">Creative Confidence</h3>
-                    <p class="media-detail">Tom &amp; David Kelley</p>
+                    <div class="book-cover">
+                        <img src="https://covers.openlibrary.org/b/isbn/9780385349369-L.jpg" alt="Creative Confidence" loading="lazy" onload="this.classList.add('loaded')">
+                    </div>
+                    <div class="book-info">
+                        <span class="media-number">03</span>
+                        <h3 class="media-title">Creative Confidence</h3>
+                        <p class="media-detail">Tom &amp; David Kelley</p>
+                    </div>
                 </div>
                 <div class="book-card">
-                    <span class="media-number">04</span>
-                    <h3 class="media-title">Daring Greatly</h3>
-                    <p class="media-detail">Bren&eacute; Brown</p>
+                    <div class="book-cover">
+                        <img src="https://covers.openlibrary.org/b/isbn/9781592408412-L.jpg" alt="Daring Greatly" loading="lazy" onload="this.classList.add('loaded')">
+                    </div>
+                    <div class="book-info">
+                        <span class="media-number">04</span>
+                        <h3 class="media-title">Daring Greatly</h3>
+                        <p class="media-detail">Bren&eacute; Brown</p>
+                    </div>
                 </div>
                 <div class="book-card">
-                    <span class="media-number">05</span>
-                    <h3 class="media-title">The War of Art</h3>
-                    <p class="media-detail">Steven Pressfield</p>
+                    <div class="book-cover">
+                        <img src="https://covers.openlibrary.org/b/isbn/9781936891023-L.jpg" alt="The War of Art" loading="lazy" onload="this.classList.add('loaded')">
+                    </div>
+                    <div class="book-info">
+                        <span class="media-number">05</span>
+                        <h3 class="media-title">The War of Art</h3>
+                        <p class="media-detail">Steven Pressfield</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1454,6 +1513,33 @@
     <script>
     (function() {
         'use strict';
+
+        /* ===== Load real cover art from iTunes API ===== */
+        function loadCoverArt() {
+            document.querySelectorAll('[data-itunes]').forEach(function(el) {
+                var term = el.getAttribute('data-itunes');
+                var type = el.getAttribute('data-type');
+                var mediaType = type === 'movie' ? 'movie' : 'music';
+                var entity = type === 'movie' ? 'movie' : 'album';
+
+                fetch('https://itunes.apple.com/search?term=' + encodeURIComponent(term) + '&media=' + mediaType + '&entity=' + entity + '&limit=1')
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.results && data.results.length > 0) {
+                            var url = data.results[0].artworkUrl100;
+                            url = url.replace('100x100bb', '600x600bb');
+                            var img = document.createElement('img');
+                            img.alt = term;
+                            img.loading = 'lazy';
+                            img.onload = function() { img.classList.add('loaded'); };
+                            img.src = url;
+                            el.appendChild(img);
+                        }
+                    })
+                    .catch(function() {});
+            });
+        }
+        loadCoverArt();
 
         /* ===== Scroll fade-in ===== */
         var observer = new IntersectionObserver(function(entries) {
