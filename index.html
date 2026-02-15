@@ -1729,32 +1729,109 @@
     (function() {
         'use strict';
 
-        /* ===== Load real cover art from iTunes API ===== */
+        /* ===== Load cover art with robust fallbacks ===== */
         function loadCoverArt() {
-            document.querySelectorAll('[data-itunes]').forEach(function(el) {
+            var items = document.querySelectorAll('[data-itunes]');
+            var delay = 0;
+
+            items.forEach(function(el) {
                 var term = el.getAttribute('data-itunes');
                 var type = el.getAttribute('data-type');
                 var mediaType = type === 'movie' ? 'movie' : 'music';
                 var entity = type === 'movie' ? 'movie' : 'album';
 
-                fetch('https://itunes.apple.com/search?term=' + encodeURIComponent(term) + '&media=' + mediaType + '&entity=' + entity + '&limit=1')
-                    .then(function(r) { return r.json(); })
-                    .then(function(data) {
-                        if (data.results && data.results.length > 0) {
-                            var url = data.results[0].artworkUrl100;
-                            url = url.replace('100x100bb', '600x600bb');
-                            var img = document.createElement('img');
-                            img.alt = term;
-                            img.loading = 'lazy';
-                            img.onload = function() { img.classList.add('loaded'); };
-                            img.src = url;
-                            el.appendChild(img);
-                        }
-                    })
-                    .catch(function() {});
+                setTimeout(function() {
+                    var apiUrl = 'https://itunes.apple.com/search?term=' + encodeURIComponent(term) +
+                                 '&media=' + mediaType + '&entity=' + entity + '&limit=1';
+
+                    fetch(apiUrl)
+                        .then(function(r) {
+                            if (!r.ok) throw new Error('HTTP ' + r.status);
+                            return r.json();
+                        })
+                        .then(function(data) { handleITunesResult(el, data, term); })
+                        .catch(function() {
+                            loadITunesJSONP(el, term, mediaType, entity);
+                        });
+                }, delay);
+                delay += 150;
             });
         }
+
+        function handleITunesResult(el, data, alt) {
+            if (el.querySelector('img')) return;
+            if (data.results && data.results.length > 0) {
+                var r = data.results[0];
+                var url = r.artworkUrl100 || r.artworkUrl60 || r.artworkUrl30;
+                if (url) {
+                    url = url.replace(/\d+x\d+bb/, '1000x1000bb');
+                    var img = document.createElement('img');
+                    img.alt = alt;
+                    img.loading = 'lazy';
+                    img.onload = function() { img.classList.add('loaded'); };
+                    img.onerror = function() { if (img.parentNode) img.parentNode.removeChild(img); };
+                    img.src = url;
+                    el.appendChild(img);
+                }
+            }
+        }
+
+        function loadITunesJSONP(el, term, mediaType, entity) {
+            var cbName = '_itcb' + Math.random().toString(36).substr(2, 8);
+            var script = document.createElement('script');
+            var cleanup = function() {
+                delete window[cbName];
+                if (script.parentNode) script.parentNode.removeChild(script);
+            };
+            var timeout = setTimeout(cleanup, 10000);
+
+            window[cbName] = function(data) {
+                clearTimeout(timeout);
+                handleITunesResult(el, data, term);
+                cleanup();
+            };
+
+            script.src = 'https://itunes.apple.com/search?term=' + encodeURIComponent(term) +
+                          '&media=' + mediaType + '&entity=' + entity + '&limit=1&callback=' + cbName;
+            script.onerror = function() { clearTimeout(timeout); cleanup(); };
+            document.head.appendChild(script);
+        }
+
         loadCoverArt();
+
+        /* ===== Upgrade book covers via Google Books ===== */
+        function upgradeBookCovers() {
+            document.querySelectorAll('.book-card').forEach(function(card, i) {
+                setTimeout(function() {
+                    var titleEl = card.querySelector('.media-title');
+                    var authorEl = card.querySelector('.media-detail');
+                    var img = card.querySelector('.book-cover img');
+                    if (!titleEl || !img) return;
+
+                    var query = titleEl.textContent + ' ' + (authorEl ? authorEl.textContent : '');
+
+                    fetch('https://www.googleapis.com/books/v1/volumes?q=' + encodeURIComponent(query) + '&maxResults=1')
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            if (data.items && data.items[0] && data.items[0].volumeInfo && data.items[0].volumeInfo.imageLinks) {
+                                var links = data.items[0].volumeInfo.imageLinks;
+                                var betterUrl = links.extraLarge || links.large || links.medium || links.thumbnail;
+                                if (betterUrl) {
+                                    betterUrl = betterUrl.replace('http://', 'https://').replace('&edge=curl', '').replace('zoom=1', 'zoom=0');
+                                    var test = new Image();
+                                    test.onload = function() {
+                                        img.src = betterUrl;
+                                        img.classList.add('loaded');
+                                    };
+                                    test.src = betterUrl;
+                                }
+                            }
+                        })
+                        .catch(function() {});
+                }, i * 200);
+            });
+        }
+        upgradeBookCovers();
 
         /* ===== Scroll fade-in ===== */
         var observer = new IntersectionObserver(function(entries) {
